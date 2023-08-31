@@ -27,7 +27,8 @@ def get_result() :
 	return result
 
 # File has more than 50 lines => Delete the number of lines from the top of the file
-def remove_line(path,lines) :
+def remove_line(lines,path) :
+	print('[+] Remove lines '+str(lines))
 	content = open(path,"r").readlines()
 	if (len(content) > 50) :
 		del content[:lines]
@@ -37,27 +38,34 @@ def remove_line(path,lines) :
 		f.close()
 
 
+def find_newhotdeal(array,path) :
+	new_array = [] 
+	for item in array :
+		## blind post except
+		try :
+			#print('[+] Find : title')
+			title = item.find('span', class_ ='ellipsis-with-reply-cnt').get_text()
+		except:
+			print('[-] Find Error : maybe blind post...')
+			continue
+		with open(path) as f:
+			s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+			if s.find(bytes(title,'utf-8')) == -1:
+				print('[+] New Info : '+title)
+				category = item.find('span', class_ = 'category').get_text()
+				price = item.find('span', class_ ='text-orange').get_text()
+				link = item.find('a', class_ ='subject-link')['href']
+				new_array.append({'title':title,'price':price,'url':"https://quasarzone.com/"+link,'category':category})
+
+	return new_array
+
 
 print('\n\n\n[+] Start HOTDEAL')
 
 
 result = get_result()
 hotdeal_list = result.find_all('div', class_ ='market-info-list-cont')
-
-new_hotdeal = [] 
-for hotdeal in hotdeal_list :
-	## blind except
-	try :
-		title = hotdeal.find('span', class_ ='ellipsis-with-reply-cnt').get_text()
-		with open(past_saleinfo) as f:
-			s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-			if s.find(bytes(title,'utf-8')) == -1:
-				category = hotdeal.find('span', class_ = 'category').get_text()
-				price = hotdeal.find('span', class_ ='text-orange').get_text()
-				link = hotdeal.find('a', class_ ='subject-link')['href']
-				new_hotdeal.append({'title':title,'price':price,'url':"https://quasarzone.com/"+link,'category':category})
-	except:
-		print('[-] Find Error : maybe blind post...')
+new_hotdeal = find_newhotdeal(hotdeal_list,past_saleinfo)	
 
 if (len(new_hotdeal) != 0 ) :
 	f = open(past_saleinfo, 'a')
@@ -65,7 +73,7 @@ if (len(new_hotdeal) != 0 ) :
 	now = datetime.now()
 	date = now.strftime('%Y-%m-%d %H:%M:%S')
 
-	text = [] #["NEW HOTDEAL INFO",date]
+	text = []
 	for hotdeal in new_hotdeal :
 		f.write(hotdeal['title']+'\n')
 		price = float(re.sub(r'[^0-9\.]', '', hotdeal['price']))
@@ -78,14 +86,17 @@ if (len(new_hotdeal) != 0 ) :
 
 	f.close()
 
-	print('[+] Found New HOTDEAL Info!')
-	print('[+] Send to Discord_bot')
-	embed=["NEW Quasarzone saleinfo : "+date,text]
-	discord_bot.sendMessage(embed)
+	if (len(text) != 0 ) :
+		print('[+] Found New HOTDEAL Info!')
+		print('[+] Send to Discord_bot')
+		embed=["NEW Quasarzone saleinfo : "+date,text]
+		discord_bot.sendMessage(embed)
 
-	print('[+] END HOTDEAL :' +date)
-
+	else :
+		print('[-] Not Found New HOTDEAL Info')
 
 else :
 	print('[-] Not Found New HOTDEAL Info')
 
+remove_line(len(new_hotdeal),past_saleinfo)
+print('[+] END HOTDEAL :' +date)
