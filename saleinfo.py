@@ -28,7 +28,7 @@ def get_result() :
 
 # File has more than 50 lines => Delete the number of lines from the top of the file
 def remove_line(lines,path) :
-	print('[+] Remove lines '+str(lines))
+	
 	content = open(path,"r").readlines()
 	if (len(content) > 50) :
 		del content[:lines]
@@ -36,10 +36,12 @@ def remove_line(lines,path) :
 		f = open(path,"w")
 		f.writelines(test)
 		f.close()
+		print('[+] Remove lines '+str(lines))
 
 
 def find_newhotdeal(array,path) :
 	new_array = [] 
+	title_array = []
 	for item in array :
 		## blind post except
 		try :
@@ -55,9 +57,11 @@ def find_newhotdeal(array,path) :
 				category = item.find('span', class_ = 'category').get_text()
 				price = item.find('span', class_ ='text-orange').get_text()
 				link = item.find('a', class_ ='subject-link')['href']
-				new_array.append({'title':title,'price':price,'url':"https://quasarzone.com/"+link,'category':category})
+				
+				new_array.append([category,'['+title+']('+url+')\n'+price])
+				title_array.append(title)
 
-	return new_array
+	return [new_array,title_array]
 
 
 print('\n\n\n[+] Start HOTDEAL')
@@ -67,33 +71,18 @@ result = get_result()
 hotdeal_list = result.find_all('div', class_ ='market-info-list-cont')
 new_hotdeal = find_newhotdeal(hotdeal_list,past_saleinfo)	
 
+with open(past_saleinfo, 'a') as f:
+        f.write('\n'.join(new_hotdeal[1]))
+
 now = datetime.now()
 date = now.strftime('%Y-%m-%d %H:%M:%S')
 
 if (len(new_hotdeal) != 0 ) :
-	f = open(past_saleinfo, 'a')
 
-	text = []
-	for hotdeal in new_hotdeal :
-		f.write(hotdeal['title']+'\n')
-		price = float(re.sub(r'[^0-9\.]', '', hotdeal['price']))
-		if(hotdeal['price'].find("USD") != -1):
-			price = price * 1000
-		
-		if(hotdeal['category'] != '기타' and price > 500) :
-			text.append([hotdeal['category'],'['+hotdeal['title']+']('+hotdeal['url']+')\n'+hotdeal['price']])
-			#print(text)
-
-	f.close()
-
-	if (len(text) != 0 ) :
-		print('[+] Found New HOTDEAL Info!')
-		print('[+] Send to Discord_bot')
-		embed=["NEW Quasarzone saleinfo : "+date,text]
-		discord_bot.sendMessage(embed)
-
-	else :
-		print('[-] Not Found New HOTDEAL Info')
+	print('[+] Found New HOTDEAL Info!')
+	print('[+] Send to Discord_bot')
+	embed=["NEW Quasarzone saleinfo : "+date,new_hotdeal[0]]
+	discord_bot.sendMessage(embed)
 
 else :
 	print('[-] Not Found New HOTDEAL Info')
