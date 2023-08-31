@@ -1,5 +1,8 @@
 name: remote ssh command test
-on: [push]
+on: 
+  push:
+    branches: [ main ]
+    
 jobs:
 
   build:
@@ -13,4 +16,6 @@ jobs:
         username: ${{ secrets.REMOTE_USER }}
         password: ${{ secrets.REMOTE_PW }}
         port: ${{ secrets.REMOTE_PORT }}
-        script: whoami
+        script: 
+          cd ${{ secrets.REMOTE_PATH }}
+          git pull origin main
