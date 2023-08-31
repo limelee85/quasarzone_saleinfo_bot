@@ -67,11 +67,11 @@ result = get_result()
 hotdeal_list = result.find_all('div', class_ ='market-info-list-cont')
 new_hotdeal = find_newhotdeal(hotdeal_list,past_saleinfo)	
 
+now = datetime.now()
+date = now.strftime('%Y-%m-%d %H:%M:%S')
+
 if (len(new_hotdeal) != 0 ) :
 	f = open(past_saleinfo, 'a')
-
-	now = datetime.now()
-	date = now.strftime('%Y-%m-%d %H:%M:%S')
 
 	text = []
 	for hotdeal in new_hotdeal :
@@ -81,7 +81,7 @@ if (len(new_hotdeal) != 0 ) :
 			price = price * 1000
 		
 		if(hotdeal['category'] != '기타' and price > 500) :
-			text.append([category,'['+hotdeal['title']+']('+hotdeal['url']+')\n'+hotdeal['price']])
+			text.append([hotdeal['category'],'['+hotdeal['title']+']('+hotdeal['url']+')\n'+hotdeal['price']])
 			#print(text)
 
 	f.close()
