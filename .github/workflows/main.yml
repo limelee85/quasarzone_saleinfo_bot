@@ -17,5 +17,5 @@ jobs:
         password: ${{ secrets.REMOTE_PW }}
         port: ${{ secrets.REMOTE_PORT }}
         script: 
-          cd ${{ secrets.REMOTE_PATH }}
+          cd ${{ secrets.REMOTE_PATH }};
           git pull origin main
