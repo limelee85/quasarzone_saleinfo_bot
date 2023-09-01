@@ -9,10 +9,8 @@ bot = discord.Client(intents=discord.Intents.default())
 def sendMessage(text):
 
 	embed = discord.Embed(title=text[0], colour = discord.Colour.blue())
-	num = 1
 	for item in text[1]:
-		embed.add_field(name=str(num)+'. '+item[0], value=item[1], inline=False) 
-		num +=1
+		embed.add_field(name=item[0], value=item[1], inline=False) 
 
 	@bot.event
 	async def on_ready():

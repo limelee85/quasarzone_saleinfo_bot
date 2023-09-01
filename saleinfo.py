@@ -6,6 +6,7 @@ import mmap
 import re
 from datetime import datetime
 import os
+import sys
 
 ## init ##
 url = "https://quasarzone.com/bbs/qb_saleinfo"
@@ -42,50 +43,101 @@ def remove_line(lines,path) :
 def find_newhotdeal(array,path) :
 	new_array = [] 
 	title_array = []
+	num =1
 	for item in array :
-		## blind post except
+		# blind post except
 		try :
-			#print('[+] Find : title')
 			title = item.find('span', class_ ='ellipsis-with-reply-cnt').get_text()
 		except:
 			print('[-] Find Error : maybe blind post...')
 			continue
 		with open(path) as f:
-			s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-			if s.find(bytes(title,'utf-8')) == -1:
-				print('[+] New Info : '+title)
+			try : 
+				s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ).find(bytes(title,'utf-8'))
+			except:
+				s = -1
+			if s == -1:
 				category = item.find('span', class_ = 'category').get_text()
 				price = item.find('span', class_ ='text-orange').get_text()
 				link = item.find('a', class_ ='subject-link')['href']
-				
-				new_array.append([category,'['+title+']('+url+')\n'+price])
+				if(title.find('래플') != -1 or ( title.find('적립') != -1 and float(re.sub(r'[^0-9\.]', '', price)) < 100 ) ) :
+					print('[-] Filter info : '+title)
+				else :
+					print('[+] New Info : '+title)
+					new_array.append(['','{}\. [`{}`]{}\n{} [(게시글 링크)](https://quasarzone.com{})\n\n'.format(str(num),category,title,price,link)])# str(num)+'. '+category
+					print('[{}](https://quasarzone.com{})\n{}'.format(title,link,price))
+					num +=1
 				title_array.append(title)
 
 	return [new_array,title_array]
 
 
-print('\n\n\n[+] Start HOTDEAL')
+def get_notice(args) :
+	title = []
+	content = []
+	for item in args:
+		if (item[:2] == "t=") :
+			title.append(item[2:])	
+		elif (item[:2] == "c="):
+			content.append(item[2:])
 
+	b = len(title) if len(title) > len(content) else len(content) #len(title),len(content))
+	if(len(title) < b) :
+		for i in range(0,b-len(title)) :
+			title.append('')
+	else :
+		for i in range(0,b-len(content)) :
+			content.append('')
 
-result = get_result()
-hotdeal_list = result.find_all('div', class_ ='market-info-list-cont')
-new_hotdeal = find_newhotdeal(hotdeal_list,past_saleinfo)	
+	res = list(map(lambda x,y: [x,y], title, content))
 
-with open(past_saleinfo, 'a') as f:
-        f.write('\n'.join(new_hotdeal[1]))
+	if (len(res) != 0 ) :
+		embed=["NOTICE : "+date,res]
+		discord_bot.sendMessage(embed)
 
-now = datetime.now()
-date = now.strftime('%Y-%m-%d %H:%M:%S')
+def saleinfo() :
+	print('[1] Get saleinfo data')
+	result = get_result()
+	print('[------------------------------]')
+	print('[2] Parse saleinfo')
+	hotdeal_list = result.find_all('div', class_ ='market-info-list-cont')
+	new_hotdeal = find_newhotdeal(hotdeal_list,past_saleinfo)	
+	print('[------------------------------]')
+	with open(past_saleinfo, 'a') as f:
+		f.write('\n'.join(new_hotdeal[1]))
 
-if (len(new_hotdeal[0]) != 0 ) :
+	now = datetime.now()
+	date = now.strftime('%Y-%m-%d %H:%M:%S')
 
-	print('[+] Found New HOTDEAL Info!')
-	print('[+] Send to Discord_bot')
-	embed=["NEW Quasarzone saleinfo : "+date,new_hotdeal[0]]
-	discord_bot.sendMessage(embed)
+	if (len(new_hotdeal[0]) != 0 ) :
 
-else :
-	print('[-] Not Found New HOTDEAL Info')
+		print('[+] Found New HOTDEAL Info!')
+		print('[------------------------------]')
+		print('[3] Send to Discord_bot')
+		embed=["NEW Quasarzone saleinfo : "+date,new_hotdeal[0]]
+		discord_bot.sendMessage(embed)
 
-remove_line(len(new_hotdeal),past_saleinfo)
-print('[+] END HOTDEAL :' +date)
+	else :
+		print('[-] Not Found New HOTDEAL Info')
+
+	remove_line(len(new_hotdeal),past_saleinfo)
+
+if __name__ == "__main__":
+
+	now = datetime.now()
+	date = now.strftime('%Y-%m-%d %H:%M:%S')
+
+	print('\n\n\n[------------------------------]\n[+] Start HOTDEAL\n[------------------------------]')
+
+	try:
+		# saleinfo.py notice t="title" c="content" t="title2" ...
+		if (sys.argv[1] == 'notice') :
+			args = sys.argv
+			del args[:2]
+			get_notice(args)
+
+	except IndexError:
+		saleinfo()
+
+	print('[+] END HOTDEAL :' +date)
+	print('[------------------------------]')
