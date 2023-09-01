@@ -77,7 +77,7 @@ with open(past_saleinfo, 'a') as f:
 now = datetime.now()
 date = now.strftime('%Y-%m-%d %H:%M:%S')
 
-if (len(new_hotdeal) != 0 ) :
+if (len(new_hotdeal[0]) != 0 ) :
 
 	print('[+] Found New HOTDEAL Info!')
 	print('[+] Send to Discord_bot')
