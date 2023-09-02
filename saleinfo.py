@@ -11,7 +11,7 @@ import sys
 ## init ##
 url = "https://quasarzone.com/bbs/qb_saleinfo"
 headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"}
-past_saleinfo = "./data/quasarzone_info"
+past_saleinfo = os.path.dirname(__file__)+"/data/quasarzone_info"
 
 # Get Quasarzone saleinfo : If there is no response using the requests module, re-request using Selenium.
 def get_result() :
