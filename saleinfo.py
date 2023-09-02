@@ -11,7 +11,7 @@ import sys
 ## init ##
 url = "https://quasarzone.com/bbs/qb_saleinfo"
 headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"}
-past_saleinfo = os.getenv("P_SALEINFO") 
+past_saleinfo = "./data/quasarzone_info"
 
 # Get Quasarzone saleinfo : If there is no response using the requests module, re-request using Selenium.
 def get_result() :
@@ -35,9 +35,9 @@ def remove_line(lines,path) :
 		del content[:lines]
 
 		f = open(path,"w")
-		f.writelines(test)
+		f.writelines(content)
 		f.close()
-		print('[+] Remove lines '+str(lines))
+		print('[+] Remove lines {}'.format(str(lines)))
 
 
 def find_newhotdeal(array,path) :
@@ -48,26 +48,30 @@ def find_newhotdeal(array,path) :
 		# blind post except
 		try :
 			title = item.find('span', class_ ='ellipsis-with-reply-cnt').get_text()
-		except:
+		except :
 			print('[-] Find Error : maybe blind post...')
 			continue
-		with open(path) as f:
-			try : 
-				s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ).find(bytes(title,'utf-8'))
-			except:
-				s = -1
-			if s == -1:
-				category = item.find('span', class_ = 'category').get_text()
-				price = item.find('span', class_ ='text-orange').get_text()
-				link = item.find('a', class_ ='subject-link')['href']
-				if(title.find('래플') != -1 or ( title.find('적립') != -1 and float(re.sub(r'[^0-9\.]', '', price)) < 100 ) ) :
-					print('[-] Filter info : '+title)
-				else :
-					print('[+] New Info : '+title)
-					new_array.append(['','{}\. [`{}`]{}\n{} [(게시글 링크)](https://quasarzone.com{})\n\n'.format(str(num),category,title,price,link)])# str(num)+'. '+category
-					print('[{}](https://quasarzone.com{})\n{}'.format(title,link,price))
-					num +=1
-				title_array.append(title)
+
+		try : 
+			with open(path) as f:
+				try : 
+					s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ).find(bytes(title,'utf-8'))
+				except ValueError: 
+					s = -1
+				if s == -1:
+					category = item.find('span', class_ = 'category').get_text()
+					price = item.find('span', class_ ='text-orange').get_text()
+					link = item.find('a', class_ ='subject-link')['href']
+					if(title.find('래플') != -1 or ( title.find('적립') != -1 and float(re.sub(r'[^0-9\.]', '', price)) < 100 ) ) :
+						print('[-] Filter info : {}'.format(title))
+					else :
+						print('[+] New Info : {}'.format(title))
+						new_array.append(['','{}\. [`{}`]{}\n{} [(게시글 링크)](https://quasarzone.com{})\n\n'.format(str(num),category,title,price,link)])
+						num +=1
+					title_array.append(title)
+		except FileNotFoundError:
+			with open(path,"x") as f:
+				print('[-] Not found FIle : Create New file')
 
 	return [new_array,title_array]
 
@@ -114,13 +118,13 @@ def saleinfo() :
 		print('[+] Found New HOTDEAL Info!')
 		print('[------------------------------]')
 		print('[3] Send to Discord_bot')
-		embed=["NEW Quasarzone saleinfo : "+date,new_hotdeal[0]]
+		embed=["NEW Quasarzone saleinfo : {}".format(date),new_hotdeal[0]]
 		discord_bot.sendMessage(embed)
 
 	else :
 		print('[-] Not Found New HOTDEAL Info')
 
-	remove_line(len(new_hotdeal),past_saleinfo)
+	remove_line(len(new_hotdeal[0]),past_saleinfo)
 
 if __name__ == "__main__":
 

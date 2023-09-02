@@ -1,7 +1,7 @@
 # Quasarzone saleinfo Discord Bot
 [퀘이사존 핫딜](https://quasarzone.com/bbs/qb_saleinfo)에서 새 글을 지정한 디스코드 채널로 알려줍니다. 
 
-[봇 초대(BOT Invite)](https://discord.com/api/oauth2/authorize?client_id=1146053995245342820&permissions=0&scope=bot) (갱신 주기 : 1hours)
+[봇 초대(BOT Invite)](https://discord.com/api/oauth2/authorize?client_id=1146053995245342820&permissions=0&scope=bot) (갱신 주기 : 10min)
 
 ## How To Use
 1. 알림을 받을 채널의 채널 편집 버튼 선택
@@ -31,17 +31,9 @@ pip install selenium-stealth
 sudo apt install chromium-chromedriver
 ```
 
-### created Storage file 
-The user who execute the script must have read, write permission to Storage file
-```
-ex)
-touch /tmp/saleinfo
-```
-
 ### set environment variable
 ```
 EXPORT TOKEN='[discord bot token]'
-EXPORT P_SALEINFO='[Scraped post storage file ex)/tmp/saleinfo]'
 ```
 
 *****
