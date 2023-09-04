@@ -108,7 +108,7 @@ def saleinfo() :
 	new_hotdeal = find_newhotdeal(hotdeal_list,past_saleinfo)	
 	print('[------------------------------]')
 	with open(past_saleinfo, 'a') as f:
-		f.write('\n'.join(new_hotdeal[1]))
+		f.write('\n'+'\n'.join(new_hotdeal[1]))
 
 	now = datetime.now()
 	date = now.strftime('%Y-%m-%d %H:%M:%S')
