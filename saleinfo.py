@@ -42,12 +42,13 @@ def remove_line(lines,path) :
 
 def find_newhotdeal(array,path) :
 	new_array = [] 
-	title_array = []
+	link_array = []
 	num =1
 	for item in array :
 		# blind post except
 		try :
 			title = item.find('span', class_ ='ellipsis-with-reply-cnt').get_text()
+			link = item.find('a', class_ ='subject-link')['href']
 		except :
 			print('[-] Find Error : maybe blind post...')
 			continue
@@ -55,25 +56,25 @@ def find_newhotdeal(array,path) :
 		try : 
 			with open(path) as f:
 				try : 
-					s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ).find(bytes(title,'utf-8'))
+					s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ).find(bytes(link,'utf-8'))
+					#s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ).find(bytes(title,'utf-8'))
 				except ValueError: 
 					s = -1
 				if s == -1:
 					category = item.find('span', class_ = 'category').get_text()
 					price = item.find('span', class_ ='text-orange').get_text()
-					link = item.find('a', class_ ='subject-link')['href']
 					if(title.find('래플') != -1 or ( title.find('적립') != -1 and float(re.sub(r'[^0-9\.]', '', price)) < 100 ) ) :
 						print('[-] Filter info : {}'.format(title))
 					else :
 						print('[+] New Info : {}'.format(title))
 						new_array.append(['','{}\. [`{}`]{}\n{} [(게시글 링크)](https://quasarzone.com{})\n\n'.format(str(num),category,title,price,link)])
 						num +=1
-					title_array.append(title)
+					link_array.append('{} : {}'.format(title,link))
 		except FileNotFoundError:
 			with open(path,"x") as f:
 				print('[-] Not found FIle : Create New file')
 
-	return [new_array,title_array]
+	return [new_array,link_array]
 
 
 def get_notice(args) :
@@ -107,8 +108,10 @@ def saleinfo() :
 	hotdeal_list = result.find_all('div', class_ ='market-info-list-cont')
 	new_hotdeal = find_newhotdeal(hotdeal_list,past_saleinfo)	
 	print('[------------------------------]')
-	with open(past_saleinfo, 'a') as f:
-		f.write('\n'+'\n'.join(new_hotdeal[1]))
+
+	if(len(new_hotdeal[0]) != 0) :
+		with open(past_saleinfo, 'a') as f:
+			f.write('\n'+'\n'.join(new_hotdeal[1]))
 
 	now = datetime.now()
 	date = now.strftime('%Y-%m-%d %H:%M:%S')
