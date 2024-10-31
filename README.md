@@ -22,15 +22,17 @@
 ## Install
 
 ### install dependencies
-```
+
 pip install requests
 pip install discord
 pip install beautifulsoup4
 pip install selenium
 pip install selenium-stealth
+OR
+pip install -r requirements.txt
+
 sudo apt install chromium-chromedriver
 ```
-
 ### set environment variable
 ```
 EXPORT TOKEN='[discord bot token]'

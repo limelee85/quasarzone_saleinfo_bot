@@ -67,7 +67,7 @@ def find_newhotdeal(array,path) :
 						print('[-] Filter info : {}'.format(title))
 					else :
 						print('[+] New Info : {}'.format(title))
-						new_array.append(['','{}\. [`{}`]{}\n{} [(게시글 링크)](https://quasarzone.com{})\n\n'.format(str(num),category,title,price,link)])
+						new_array.append(['','{}. [`{}`]{}\n{} [(게시글 링크)](https://quasarzone.com{})\n\n'.format(str(num),category,title,price,link)])
 						num +=1
 					link_array.append('{} : {}'.format(title,link))
 		except FileNotFoundError:
