@@ -22,7 +22,7 @@
 ## Install
 
 ### install dependencies
-
+```
 pip install requests
 pip install discord
 pip install beautifulsoup4
